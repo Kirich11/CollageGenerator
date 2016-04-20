@@ -46,7 +46,7 @@ $targetWorks = $resultSet->fetchAll();
  				$color = new ImagickPixel('#000000');
  				$background = new ImagickPixel('none');
 
- 				$draw->setFont('/var/www/app/Sunline_trafaret.otf');
+ 				$draw->setFont(APPLICATION_PATH.'/Sunline_trafaret.otf');
  				$draw->setFontSize(190);
  				$draw->setFillColor($color);
  				$draw->setStrokeAntialias(true);
@@ -59,7 +59,7 @@ $targetWorks = $resultSet->fetchAll();
 				$t_image->setImageFormat('jpg');
 				$t_image->drawImage($draw);
 
-				$image->readImage('/var/www/app/diplom_kosmos.jpg');
+				$image->readImage(APPLICATION_PATH.'/diplom_kosmos.jpg');
         $image->setImageFormat('pdf');
 				$image->compositeImage($t_image, Imagick::COMPOSITE_DEFAULT, (2481/2 - $metrics['textWidth']/2), 820);
     			
