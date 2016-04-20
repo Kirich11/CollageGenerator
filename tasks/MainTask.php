@@ -1,23 +1,25 @@
 <?php
-#require 'vendor/autoload.php';
 
-
-#namespace Imagine\Test\Draw;
-use Imagine\Image\Box;
-use Imagine\Image\Font;
-use Imagine\Image\Palette\RGB;
-use Imagine\Image\Point;
-use Imagine\Image\Point\Center;
-use Imagine\Image\ImagineInterface;
-use Imagine\Test\ImagineTestCase;
-
+use Imagine\Image\Box,
+    Imagine\Image\Font,
+    Imagine\Image\Palette\RGB,
+    Imagine\Image\Point,
+    Imagine\Image\Point\Center,
+    Imagine\Image\ImagineInterface,
+    Imagine\Test\ImagineTestCase,
+    Phalcon\Logger,
+    Phalcon\Logger\Adapter\File as FileAdapter;
 
 class MainTask extends \Phalcon\Cli\Task
 {
     public function mainAction()
     {
-    	
-      
+        $logger = new FileAdapter(
+            APPLICATION_PATH.'/log/app.log',
+            array(
+                'mode'=> 'w'
+                )
+            );
         $db = $this->getDI()->getShared("db");
 $sql = "SELECT * 
 FROM (
@@ -40,7 +42,13 @@ $targetWorks = $resultSet->fetchAll();
  				$fullname =$name." ".$surname;
  				$id = $works["id_competitive_work"];
  				
- 				$t_image = new Imagick();
+                if(!empty($fullname))
+                    $logger->info("got name and id:".$fullname.", ".$id);
+                else
+                    $logger->error("couldn't get name and id");
+ 				
+
+                $t_image = new Imagick();
  				$image = new Imagick();
  				$draw = new ImagickDraw();
  				$color = new ImagickPixel('#000000');
@@ -67,6 +75,7 @@ $targetWorks = $resultSet->fetchAll();
     			$filename =APPLICATION_PATH."/result/".$id.".pdf";
     			
           $image->writeImage($filename);
+          $logger->info("success");
  			}
  			
     }

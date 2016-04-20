@@ -3,8 +3,8 @@
 use Phalcon\Loader,
     Phalcon\Di\FactoryDefault\Cli as CliDI,
     Phalcon\Cli\Console as ConsoleApp,
-     Phalcon\Db\Adapter\Pdo\Mysql as DbAdapter;
-
+    Phalcon\Db\Adapter\Pdo\Mysql as DbAdapter;
+    
 define('VERSION', '1.0.0');
 
 // Используем стандартный для CLI контейнер зависимостей
@@ -30,6 +30,8 @@ if (is_readable(APPLICATION_PATH . '/config/config.php')) {
     $config = include APPLICATION_PATH . '/config/config.php';
     $di->set('config', $config);
 }
+
+
 
 $di['db'] = function () use ($config) {
     return new DbAdapter(
