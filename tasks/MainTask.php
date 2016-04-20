@@ -17,16 +17,19 @@ class MainTask extends \Phalcon\Cli\Task
     public function mainAction()
     {
     	
-       /* echo "\nThis is the default task and the default action \n";
-        $link = mysql_connect('localhost', 'root', '123');
-       	mysql_select_db('contest',$link);
-       	mysql_query("SET NAMES utf8");
-       	$sql = "SELECT `name`, `surname` ,`id_competitive_work` FROM `moderation_stack_grouped` WHERE `result`='одобрено'";
- 		    $result = mysql_query($sql);
-*/
+      
         $db = $this->getDI()->getShared("db");
-$sql = "SELECT `name`, `surname` ,`id_competitive_work` FROM `moderation_stack_grouped` WHERE `result`='одобрено'";
-$resultSet = $db->query($sql);
+$sql = "SELECT * 
+FROM (
+
+SELECT COUNT( * ) AS parts_qty, email, id_competitive_work, name, surname
+FROM  `moderation_stack_grouped` 
+WHERE result =  'одобрено'
+GROUP BY email
+ORDER BY id_competitive_work
+)t
+WHERE parts_qty <2";
+$resultSet = $db->query($sql_lel);
 $resultSet->setFetchMode(Phalcon\Db::FETCH_ASSOC);
 $targetWorks = $resultSet->fetchAll();
 
