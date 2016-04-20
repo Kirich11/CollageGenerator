@@ -60,8 +60,8 @@ $targetWorks = $resultSet->fetchAll();
         $image->setImageFormat('pdf');
 				$image->compositeImage($t_image, Imagick::COMPOSITE_DEFAULT, (2481/2 - $metrics['textWidth']/2), 820);
     			
-
-    			$filename = "/var/www/app/result/".$id.".pdf";
+          
+    			$filename =APPLICATION_PATH."/result/".$id.".pdf";
     			
           $image->writeImage($filename);
  			}
