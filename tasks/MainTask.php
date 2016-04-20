@@ -1,5 +1,5 @@
 <?php
-require 'vendor/autoload.php';
+#require 'vendor/autoload.php';
 
 
 #namespace Imagine\Test\Draw;
@@ -11,23 +11,31 @@ use Imagine\Image\Point\Center;
 use Imagine\Image\ImagineInterface;
 use Imagine\Test\ImagineTestCase;
 
+
 class MainTask extends \Phalcon\Cli\Task
 {
     public function mainAction()
     {
     	
-        echo "\nThis is the default task and the default action \n";
+       /* echo "\nThis is the default task and the default action \n";
         $link = mysql_connect('localhost', 'root', '123');
        	mysql_select_db('contest',$link);
        	mysql_query("SET NAMES utf8");
        	$sql = "SELECT `name`, `surname` ,`id_competitive_work` FROM `moderation_stack_grouped` WHERE `result`='одобрено'";
  		    $result = mysql_query($sql);
+*/
+        $db = $this->getDI()->getShared("db");
+$sql = "SELECT `name`, `surname` ,`id_competitive_work` FROM `moderation_stack_grouped` WHERE `result`='одобрено'";
+$resultSet = $db->query($sql);
+$resultSet->setFetchMode(Phalcon\Db::FETCH_ASSOC);
+$targetWorks = $resultSet->fetchAll();
+
        
- 		while ($names=mysql_fetch_assoc($result)) {
- 				$name = $names['name'];
- 				$surname = $names['surname'];
+ 		foreach($targetWorks as $key=>&$works) {
+ 				$name = $works['name'];
+ 				$surname = $works['surname'];
  				$fullname =$name." ".$surname;
- 				$id = $names["id_competitive_work"];
+ 				$id = $works["id_competitive_work"];
  				
  				$t_image = new Imagick();
  				$image = new Imagick();
@@ -49,16 +57,14 @@ class MainTask extends \Phalcon\Cli\Task
 				$t_image->drawImage($draw);
 
 				$image->readImage('/var/www/app/diplom_kosmos.jpg');
-        #$image->setImageFormat('pdf');
+        $image->setImageFormat('pdf');
 				$image->compositeImage($t_image, Imagick::COMPOSITE_DEFAULT, (2481/2 - $metrics['textWidth']/2), 820);
     			
 
-    			$filename = "/var/www/app/result/".$id.".jpg";
+    			$filename = "/var/www/app/result/".$id.".pdf";
     			
           $image->writeImage($filename);
  			}
-  
- 			mysql_close($link);
  			
     }
 	
