@@ -29,7 +29,7 @@ GROUP BY email
 ORDER BY id_competitive_work
 )t
 WHERE parts_qty <2";
-$resultSet = $db->query($sql_lel);
+$resultSet = $db->query($sql);
 $resultSet->setFetchMode(Phalcon\Db::FETCH_ASSOC);
 $targetWorks = $resultSet->fetchAll();
 
