@@ -38,10 +38,7 @@ WHERE parts_qty <2";
 $resultSet = $db->query($sql);
 $resultSet->setFetchMode(Phalcon\Db::FETCH_ASSOC);
 $targetWorks = $resultSet->fetchAll();
-
-       $i=0;
  		foreach($targetWorks as $key=>&$works) {
-            if($i<2) {
  				$name = $works['name'];
  				$surname = $works['surname'];
  				$fullname =$name." ".$surname;
@@ -69,8 +66,6 @@ $targetWorks = $resultSet->fetchAll();
                 $img->save($filenameCMYK);
                 unset($img);
           $logger->info("success");
-          $i++;
- 			}
  		}	
     }
 	
