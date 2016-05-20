@@ -1,5 +1,8 @@
 <?php
 
+require 'vendor/autoload.php';
+
+
 use Imagine\Image\Box,
     Imagine\Image\Font,
     Imagine\Image\Palette\RGB,
@@ -7,6 +10,7 @@ use Imagine\Image\Box,
     Imagine\Image\Point\Center,
     Imagine\Image\ImagineInterface,
     Imagine\Test\ImagineTestCase,
+    Imagine\Image\Palette\Color,
     Phalcon\Logger,
     Phalcon\Logger\Adapter\File as FileAdapter;
 
@@ -35,8 +39,9 @@ $resultSet = $db->query($sql);
 $resultSet->setFetchMode(Phalcon\Db::FETCH_ASSOC);
 $targetWorks = $resultSet->fetchAll();
 
-       
+       $i=0;
  		foreach($targetWorks as $key=>&$works) {
+            if($i<2) {
  				$name = $works['name'];
  				$surname = $works['surname'];
  				$fullname =$name." ".$surname;
@@ -47,37 +52,26 @@ $targetWorks = $resultSet->fetchAll();
                 else
                     $logger->error("couldn't get name and id");
  				
-
-                $t_image = new Imagick();
- 				$image = new Imagick();
- 				$draw = new ImagickDraw();
- 				$color = new ImagickPixel('#000000');
- 				$background = new ImagickPixel('none');
-
- 				$draw->setFont(APPLICATION_PATH.'/Sunline_trafaret.otf');
- 				$draw->setFontSize(190);
- 				$draw->setFillColor($color);
- 				$draw->setStrokeAntialias(true);
-				$draw->setTextAntialias(true);
-
-				$metrics = $image->queryFontMetrics($draw,$fullname);
-
-				$draw->annotation(0,$metrics['ascender'], $fullname);
-				$t_image->newImage($metrics['textWidth'], $metrics['textHeight'], $background);
-				$t_image->setImageFormat('jpg');
-				$t_image->drawImage($draw);
-
-				$image->readImage(APPLICATION_PATH.'/diplom_kosmos.jpg');
-        $image->setImageFormat('pdf');
-				$image->compositeImage($t_image, Imagick::COMPOSITE_DEFAULT, (2481/2 - $metrics['textWidth']/2), 820);
-    			
-          
-    			$filename =APPLICATION_PATH."/result/".$id.".pdf";
-    			
-          $image->writeImage($filename);
+                $imagine = new Imagine\Imagick\Imagine();
+    
+                $palette = new Imagine\Image\Palette\RGB();
+                $palette = $palette->color('#002340');
+                $img = $imagine->open(APPLICATION_PATH.'/diplom_kosmos_A5.tif');
+                $img->usePalette(new Imagine\Image\Palette\RGB());
+                $font = $imagine->font(APPLICATION_PATH.'/Sunline_trafaret.otf', 130, $palette);
+                $font->box($fullname);
+                echo $fullname." ";
+                $img->draw()->text($fullname,$font, new Point(2091/2-($font->box($fullname)->getWidth())/2, 700));    			
+         		$filenameRGB =APPLICATION_PATH."/result/"."RGB".$id.".tif";
+    			$img->save($filenameRGB);
+                $filenameCMYK =APPLICATION_PATH."/result/"."CMYK".$id.".tif";
+                $img->usePalette(new Imagine\Image\Palette\CMYK());
+                $img->save($filenameCMYK);
+                unset($img);
           $logger->info("success");
+          $i++;
  			}
- 			
+ 		}	
     }
 	
 }
