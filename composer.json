@@ -1,5 +1,9 @@
 {
 "require": {
-"imagine/imagine" : "~0.6.3"
+	"imagine/imagine" : "~0.6.3",
+	"iio/libmergepdf": "~3.0",
+	"setasign/fpdi": "1.6.1",
+	"setasign/fpdi-fpdf": "1.6.1",
+		"symfony/finder": "^3.1"
 }
 }

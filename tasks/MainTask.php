@@ -1,5 +1,5 @@
 <?php
-
+include 'vendor/autoload.php';
 use Imagine\Image\Box,
     Imagine\Image\Font,
     Imagine\Image\Palette\RGB,
@@ -9,6 +9,10 @@ use Imagine\Image\Box,
     Imagine\Test\ImagineTestCase,
     Phalcon\Logger,
     Phalcon\Logger\Adapter\File as FileAdapter;
+    use iio\libmergepdf\Merger;
+    use Symfony\Component\Finder\Finder;
+    #include_once(APPLICATION_PATH."/vendor/iio/libmergepdf/src/Merger.php");
+   ## include_once(APPLICATION_PATH."/vendor/setasign/fpdi/fpdf.php");
 
 class MainTask extends \Phalcon\Cli\Task
 {
@@ -21,21 +25,14 @@ class MainTask extends \Phalcon\Cli\Task
                 )
             );
         $db = $this->getDI()->getShared("db");
-$sql = "SELECT * 
-FROM (
-
-SELECT COUNT( * ) AS parts_qty, email, id_competitive_work, name, surname
-FROM  `moderation_stack_grouped` 
-WHERE result =  'одобрено'
-GROUP BY email
-ORDER BY id_competitive_work
-)t
-WHERE parts_qty <2";
+$sql = "SELECT moderation_stack_material.id_competitive_work, name, surname
+FROM `moderation_queue_final` 
+JOIN moderation_stack_material ON moderation_queue_final.id_competitive_work = moderation_stack_material.id_competitive_work
+ORDER BY `moderation_stack_material`.`id_competitive_work` ASC 
+LIMIT 500";
 $resultSet = $db->query($sql);
 $resultSet->setFetchMode(Phalcon\Db::FETCH_ASSOC);
 $targetWorks = $resultSet->fetchAll();
-
-       
  		foreach($targetWorks as $key=>&$works) {
  				$name = $works['name'];
  				$surname = $works['surname'];
@@ -47,37 +44,53 @@ $targetWorks = $resultSet->fetchAll();
                 else
                     $logger->error("couldn't get name and id");
  				
-
-                $t_image = new Imagick();
- 				$image = new Imagick();
+ 				$image = new Imagick();    
  				$draw = new ImagickDraw();
- 				$color = new ImagickPixel('#000000');
- 				$background = new ImagickPixel('none');
-
+ 				$color = new ImagickPixel('#005d80');
+               
  				$draw->setFont(APPLICATION_PATH.'/Sunline_trafaret.otf');
- 				$draw->setFontSize(190);
+ 				$draw->setFontSize(165);
  				$draw->setFillColor($color);
  				$draw->setStrokeAntialias(true);
 				$draw->setTextAntialias(true);
 
 				$metrics = $image->queryFontMetrics($draw,$fullname);
-
 				$draw->annotation(0,$metrics['ascender'], $fullname);
-				$t_image->newImage($metrics['textWidth'], $metrics['textHeight'], $background);
-				$t_image->setImageFormat('jpg');
-				$t_image->drawImage($draw);
 
-				$image->readImage(APPLICATION_PATH.'/diplom_kosmos.jpg');
-        $image->setImageFormat('pdf');
-				$image->compositeImage($t_image, Imagick::COMPOSITE_DEFAULT, (2481/2 - $metrics['textWidth']/2), 820);
-    			
-          
-    			$filename =APPLICATION_PATH."/result/".$id.".pdf";
+                $filename1 =APPLICATION_PATH."/result/".$id."Name.tif";
+				$image->readImage(APPLICATION_PATH.'/diplom_kosmos_A5_02.tif');
+                $image->transformImageColorspace(Imagick::COLORSPACE_SRGB);
+                $image->setImageFormat('pdf');
+				$image->annotateImage($draw,(2188/2 - $metrics['textWidth']/2), 896,0, $fullname);
+    			$image->transformImageColorspace(Imagick::COLORSPACE_CMYK);
+                $filename =APPLICATION_PATH."/result/".$id.".pdf";
     			
           $image->writeImage($filename);
           $logger->info("success");
- 			}
- 			
+ 			} 			
     }
+
+    public function testAction()
+    {
+        $finder = new Finder();
+        $finder->files()->in(APPLICATION_PATH."/result")->name('*.pdf')->sortByName();
+
+        
+        #$m->addFinder($finder);
+       # file_put_contents(APPLICATION_PATH."/result/result.pdf", $m->merge());
+        $dir = new DirectoryIterator(APPLICATION_PATH."/result");
+        foreach ($dir as $fileinfo) {
+            if (!$fileinfo->isDot()) {
+                #echo $fileinfo->getFilename();
+               # die();
+                $m = new Merger();
+                $m->addFromFile(APPLICATION_PATH."/result/".$fileinfo->getFilename());
+                if (file_exists(APPLICATION_PATH."/result/result.pdf")) {
+                    $m->addFromFile(APPLICATION_PATH."/result/result.pdf");
+                };
+                file_put_contents(APPLICATION_PATH."/result/result.pdf", $m->merge());
+            }
+          }
+        }
 	
 }
